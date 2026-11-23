@@ -58,3 +58,11 @@ Read [architecture](docs/architecture.md), [API boundaries](docs/api-contracts.m
 `/app` now provides a compact passenger home with the Naeem greeting, destination search, quick actions, nearby buses, and popular regional routes. Bus rows open `/app/bus/[id]`; route selections and destination searches feed the existing passenger route browser. Mobile passenger pages include active Home, Routes, Tickets, and Profile tabs.
 
 Nearby vehicle and passenger route fixtures live in `frontend/src/mocks/passenger.ts`. Zod-validated models and service methods are separate from React components. Independent loading, empty, and retry states are covered by `frontend/tests/passenger-home.spec.ts`. Booking remains a preview; no Django backend was changed for this screen.
+
+## Passenger tracking
+
+`/app/live` is a map-first Leaflet/OpenStreetMap experience with a demo passenger location, stops, route geometry, destinations, and BUS-06/BUS-12/BUS-19. Floating controls support zoom, passenger recentering, following the selected vehicle, and showing the entire route. Selecting a bus opens a compact summary linked to its detail page.
+
+BUS-06 receives a development GPS sample every 3 seconds. Its marker interpolates over 2.8 seconds between samples, with reduced-motion support. The simulator, subscription hook, and map-independent interpolation live in separate modules; the map consumes typed positions. The selected panel's timestamp ages honestly and marks stale samples as delayed. Distances, ETAs, and seat counts remain illustrative fixtures. No production hardware or Django WebSocket connection is enabled.
+
+See the GPS boundary notes in `docs/api-contracts.md`. Tracking screenshots are saved as `frontend/artifacts/live-*.png`; `tests/live-tracking.spec.ts` and `tests/gps-logic.spec.ts` verify controls, movement, source lifecycle, reduced motion, and message validation.

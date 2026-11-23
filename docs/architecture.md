@@ -25,3 +25,9 @@ ESP32/A7670E → authenticated telemetry ingestion → validated timestamped pos
 Camera and Raspberry Pi → versioned occupancy inference → confidence and freshness validation → occupancy service → authorized passenger/operator summaries.
 
 Booking requires its own transactional seat allocation, idempotency, payment reconciliation, and operator authorization design. None is implemented in this foundation. Never use the prototype's availability estimates as a booking source of truth.
+
+## Passenger live-map boundary
+
+Tracking initial state comes through `lib/api/tracking.ts` and a Zod snapshot contract. A mounted `useLiveTracking` session subscribes to an injected `GpsSource` and applies validated, ordered updates. The development source is isolated in `mocks/gps-simulator.ts`; the source selector refuses to run it for hardware-mode snapshots. UI clock ticks update freshness without reconnecting the source.
+
+The Leaflet view in `features/tracking/live-map.tsx` owns map layers, selection visuals, route fitting, and camera controls. Position interpolation is a separate, map-independent module with an injectable frame clock. GPS sampling does not occur in the map, and animation frames do not rerender the entire React page. Unmounting cancels the source, age timer, animation frames, map observers, and marker icon roots. A manual map drag exits follow mode.

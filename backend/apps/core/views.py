@@ -38,3 +38,16 @@ class ReadinessView(LivenessView):
             {"status": "ready" if ready else "not_ready", "dependencies": dependencies},
             status=200 if ready else 503,
         )
+
+
+class ServiceIndexView(LivenessView):
+    def get(self, request):
+        return Response(
+            {
+                "service": "SmartTransit BD API",
+                "stage": "foundation",
+                "health": "/api/v1/health/live/",
+                "readiness": "/api/v1/health/ready/",
+                "admin": "/admin/",
+            }
+        )

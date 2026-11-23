@@ -1,5 +1,5 @@
-import { PassengerLive } from "@/features/pages";
-export const metadata = { title: "Live" };
+import { LiveTracking } from "@/features/tracking/live-tracking";
+export const metadata = { title: "Live tracking" };
 export default function Page() {
-  return <PassengerLive />;
+  return <LiveTracking />;
 }

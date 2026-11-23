@@ -1,3 +1,4 @@
+import { createTrackingSnapshot } from "@/mocks/tracking";
 import { nearbyVehicles, passengerRoutes } from "@/mocks/passenger";
 import { vehicles, routes, overview } from "@/mocks/data";
 const resources: Record<string, unknown> = {
@@ -30,6 +31,10 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const key = (await params).path.join("/");
+  if (key === "tracking")
+    return Response.json(createTrackingSnapshot(), {
+      headers: { "Cache-Control": "no-store" },
+    });
   if (
     key === "routes" &&
     new URL(request.url).searchParams.get("audience") === "passenger"

@@ -94,7 +94,7 @@ export function AppShell({
     (pathname.startsWith("/app/bus/") ? "Bus details" : "Overview");
   return (
     <div
-      className={`workspace ${mode} ${mode === "passenger" && pathname === "/app" ? "passenger-home-shell" : ""}`}
+      className={`workspace ${mode} ${mode === "passenger" && pathname === "/app" ? "passenger-home-shell" : mode === "passenger" && pathname === "/app/live" ? "passenger-live-shell" : ""}`}
     >
       <a href="#main" className="skip-link">
         Skip to content

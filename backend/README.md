@@ -26,10 +26,10 @@ python3.14 -m venv .venv
 pip install -r requirements.lock
 ```
 
-Settings read environment variables directly; they do not automatically load `.env`. For local processes, export values from your environment manager. Container hostnames `db` and `redis` must be changed to `127.0.0.1` when running Python on the host.
+Development settings automatically load `backend/.env` with python-dotenv. Exported environment variables take precedence. Production settings do not load the local file. Container hostnames `db` and `redis` must be changed to `127.0.0.1` when running Python on the host.
 
 ```bash
-# With DJANGO_SECRET_KEY and infrastructure environment variables exported:
+# With backend/.env configured and PostgreSQL/PostGIS and Redis running:
 python manage.py check
 python manage.py migrate
 python manage.py runserver 127.0.0.1:8000
@@ -65,3 +65,20 @@ pip check
 The test settings use an isolated in-memory SQLite database, eager tasks, and in-memory cache/channels. Readiness tests mock PostGIS and Redis. They do not prove end-to-end database, spatial, broker, or worker operation. Test settings must never be used to serve the application.
 
 Production settings are a baseline at `config.settings.production`; they require a strong signing key and database password. They are not a deployment certification. Configure trusted hosts, CORS, TLS termination, static serving, reverse proxy trust, access controls, monitoring, and backups for the eventual hosting environment.
+
+## This workstation: local services without sudo
+
+PostgreSQL 18, PostGIS, and Redis have been extracted from Ubuntu 26.04 packages into the ignored `backend/.local-services/runtime/` directory. They do not modify system packages or services. PostgreSQL data and service logs are kept under `backend/.local-services/`. Keep this directory to preserve local database data. The helper only initializes a cluster when it does not exist and does not replace an already listening service.
+
+From `backend/`, after a reboot or when dependencies are stopped:
+
+```bash
+source .venv/bin/activate
+python start-local-services.py
+python manage.py migrate
+python manage.py runserver
+```
+
+The helper binds both services to loopback. PostgreSQL uses the password in `.env`; Redis runs as a local development cache/broker without persistence. This helper relies on this workstation's extracted Ubuntu packages and system libraries; use the documented Docker setup on other machines.
+
+Open http://127.0.0.1:8000/ for API information. Both `/api/v1/health/live/` and `/api/v1/health/ready/` should return HTTP 200. `./run-dev.sh` is now a convenience wrapper around the standard Django `runserver` command. It no longer requires manual shell sourcing of `.env`.

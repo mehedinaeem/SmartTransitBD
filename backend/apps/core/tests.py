@@ -51,3 +51,46 @@ class HealthTests(SimpleTestCase):
             HTTP_ACCESS_CONTROL_REQUEST_METHOD="GET",
         )
         self.assertNotIn("Access-Control-Allow-Origin", rejected)
+
+
+class EnvironmentLoadingTests(SimpleTestCase):
+    def test_development_loads_dotenv_without_overriding_shell(self):
+        import os
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from config.environment import load_development_environment
+
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text("DJANGO_SECRET_KEY=local-file-value\nPOSTGRES_DB=local-db\n")
+            with patch.dict(
+                os.environ,
+                {
+                    "DJANGO_SETTINGS_MODULE": "config.settings.development",
+                    "DJANGO_SECRET_KEY": "exported-value",
+                },
+                clear=True,
+            ):
+                load_development_environment(path)
+                self.assertEqual(os.environ["DJANGO_SECRET_KEY"], "exported-value")
+                self.assertEqual(os.environ["POSTGRES_DB"], "local-db")
+
+    def test_production_does_not_load_local_dotenv(self):
+        import os
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from config.environment import load_development_environment
+
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text("DJANGO_SECRET_KEY=local-file-value\n")
+            with patch.dict(
+                os.environ, {"DJANGO_SETTINGS_MODULE": "config.settings.production"}, clear=True
+            ):
+                load_development_environment(path)
+                self.assertNotIn("DJANGO_SECRET_KEY", os.environ)
+
+    def test_backend_root_has_service_information(self):
+        response = APIClient().get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["service"], "SmartTransit BD API")

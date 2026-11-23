@@ -26,12 +26,7 @@ for (const width of [375, 430, 768, 1024, 1440]) {
       expect(response?.status(), route).toBe(200);
       await expect(page.locator("h1")).toBeVisible();
       if (
-        [
-          "/operator",
-          "/operator/fleet",
-          "/operator/vehicles",
-          "/app/live",
-        ].includes(route)
+        ["/operator", "/operator/fleet", "/operator/vehicles"].includes(route)
       )
         await expect(
           page
@@ -40,6 +35,26 @@ for (const width of [375, 430, 768, 1024, 1440]) {
             .or(page.locator(".bus-marker").first())
             .first(),
         ).toBeVisible();
+      if (route === "/app/live") {
+        await expect(
+          page
+            .getByRole("region", { name: "Selected bus" })
+            .getByRole("heading", { name: "BUS-06", exact: true }),
+        ).toBeVisible();
+        await expect(page.locator(".tracking-bus-pin")).toHaveCount(3);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollHeight <= innerHeight + 1,
+          ),
+        ).toBe(true);
+        await page
+          .locator(".tracking-map-canvas .leaflet-tile-loaded")
+          .first()
+          .waitFor({ timeout: 10000 })
+          .catch(() => {});
+        await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
+        await page.screenshot({ path: `artifacts/live-${width}.png` });
+      }
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= window.innerWidth,

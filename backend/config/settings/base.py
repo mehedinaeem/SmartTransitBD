@@ -4,8 +4,11 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
+from config.environment import load_development_environment
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+# Load local configuration for every development entry point, preserving exported values.
+load_development_environment(BASE_DIR / ".env")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set.")

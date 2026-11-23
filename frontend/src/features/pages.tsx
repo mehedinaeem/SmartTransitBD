@@ -20,7 +20,6 @@ import { toast } from "sonner";
 import { useRoutes, useVehicles } from "@/hooks/use-transit";
 import {
   PageHeading,
-  Dashboard,
   FleetTable,
   OccupancyChart,
   SystemStatus,
@@ -398,7 +397,4 @@ export function AnalyticsPage({ occupancy = false }: { occupancy?: boolean }) {
 function VehiclesPageTable() {
   const q = useVehicles();
   return q.data ? <FleetTable vehicles={q.data} /> : null;
-}
-export function PassengerLive() {
-  return <Dashboard fleetOnly passenger />;
 }
