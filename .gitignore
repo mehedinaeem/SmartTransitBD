@@ -6,3 +6,10 @@ out/
 *.tsbuildinfo
 playwright-report/
 test-results/
+__pycache__/
+*.py[cod]
+.venv/
+*.sqlite3
+staticfiles/
+.pytest_cache/
+.ruff_cache/

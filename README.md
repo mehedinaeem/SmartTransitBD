@@ -1,48 +1,60 @@
 # SmartTransit BD
 
-A Next.js App Router foundation for an intelligent public transport platform for Bangladesh.
+An IoT and computer vision public transport platform foundation for Bangladesh. This repository contains separate frontend and backend applications. It is a development foundation, not a completed production system.
 
-## Run locally
+```text
+frontend/  Next.js passenger and operator application, shared UI, API services, mocks
+backend/   Django REST Framework, GeoDjango, Channels, Celery, JWT, infrastructure
+firmware/  Hardware integration boundary and current prototype status
+vision/    Occupancy model integration boundary and current testing status
+docs/      Architecture, API contracts, and validation notes
+```
+
+## Frontend
 
 Requires Node.js 22 LTS and npm.
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000/operator or http://localhost:3000/app. The root redirects to the operator overview.
+Open http://localhost:3000/app or http://localhost:3000/operator. All requested passenger and operator routes are present with separate layouts. The UI uses the navy/blue design system, Inter, Tailwind, shadcn-style Radix components, Lucide icons, Framer Motion, Zustand, TanStack Query, Zod, Leaflet/OpenStreetMap, and Recharts.
 
 ```bash
 npm run lint
 npm run build
-npm start
+# Install a Playwright browser once, or use an installed Chrome executable.
+npx playwright install chromium
+npm run test:ui
+# On this workstation:
+CHROME_PATH=/usr/bin/google-chrome npm run test:ui
 ```
 
-## Architecture
+Browser tests start and stop their own production server on port 3100 (`PLAYWRIGHT_PORT` can override it). They cover every application route at 375, 430, 768, 1024, and 1440px, overflow, runtime errors, responsive navigation, search, dialogs, route filtering, session preferences, and API failure recovery. Screenshots are written to `frontend/artifacts/`.
 
-- `src/app`: separate passenger and operator layouts, route entries, mock API route handlers, loading/error boundaries.
-- `src/components`: navigation shell, providers, Leaflet map, and shared shadcn-style UI primitives. `components.json` configures shadcn aliases and styling. Button and dialog use Radix primitives.
-- `src/features`: overview, fleet table, route previews, and foundation screens.
-- `src/lib/api.ts`: typed `TransitApi` adapter; TanStack Query handles caching, abort signals, retries, and request state. Replace this implementation when integrating the backend.
-- `src/hooks`: query hooks; `src/stores`: Zustand interface state.
-- `src/types`: Zod response contracts and inferred TypeScript models.
-- `src/mocks`: illustrative Dhaka routes, vehicles, and activity.
+The default API mode is `mock`. `frontend/.env.example` documents future Django configuration. Environment variables prefixed `NEXT_PUBLIC_` are public and fixed at build time. Never put secrets in them. Switching to Django mode does not implement the planned domain endpoints or connect the frontend authentication flow.
 
-Leaflet is loaded only in the browser. OpenStreetMap tiles and Inter font loading require internet access. Tile failures show an explanatory message. Production map traffic should use a suitable tile service under its usage policy.
+## Backend
 
-## Scope and real project status
+See [backend/README.md](backend/README.md) for isolated Python setup, Docker development infrastructure, migrations, API endpoints, and checks. Dependencies are locked with Django 6.1.3. PostgreSQL/PostGIS is the application database; Redis supports channels, caching, and Celery. Unit tests deliberately use SQLite, in-memory channels/cache, and mocked readiness dependencies.
 
-The GPS/GNSS prototype works and cellular position transmission is available. The seat occupancy model is being trained/tested. Raspberry Pi integration is in progress. This web app is **not connected to that hardware**.
+## Actual project status
 
-All locations, timestamps, alerts, occupancy figures, and chart values in the application are sample data. The overview uses a fixed demonstration date. Booking, payments, authentication, and production authorization are future work. Settings are UI previews; no account data is sent to a server. Do not deploy operator routes as a production control plane before adding authentication and server-side authorization.
+- GPS/GNSS hardware prototype is working.
+- ESP32/A7670E can transmit vehicle location over cellular connectivity.
+- The computer vision seat occupancy model is under training and testing.
+- Raspberry Pi integration is in progress.
+- Booking and passenger applications remain software prototypes.
+- Full production deployment is incomplete.
 
-All requested passenger and operator URLs are present. The visual system includes responsive navigation, motion with reduced-motion support, keyboard-accessible Radix dialogs, reusable empty/error/loading states, toasts, and forms.
+All displayed locations, counts, alerts, timestamps, occupancy estimates, and charts are simulated. Hardware ingestion, authenticated operator access, tenant authorization, production sockets, booking transactions, payments, and model deployment are future integrations.
 
-## Browser verification
+Read [architecture](docs/architecture.md), [API boundaries](docs/api-contracts.md), and [validation](docs/validation.md) before the next implementation step.
 
-After building, run `npm run test:ui`. Install Playwright Chromium with `npx playwright install chromium`, or set `CHROME_PATH` to an installed Chrome executable (on this workstation: `/usr/bin/google-chrome`). The test runner starts and stops its own production server on port 3000.
+## Passenger home
 
-The suite checks all 14 application routes at 375px, 768px, and 1440px, checks page overflow and browser exceptions, exercises mobile navigation, fleet search/status filters, vehicle dialogs, journey filtering, session preferences, and API failure/retry behavior. Six screenshots are written to `artifacts/`.
+`/app` now provides a compact passenger home with the Naeem greeting, destination search, quick actions, nearby buses, and popular regional routes. Bus rows open `/app/bus/[id]`; route selections and destination searches feed the existing passenger route browser. Mobile passenger pages include active Home, Routes, Tickets, and Profile tabs.
 
-Validated locally: `npm install`, `npm run lint`, `npm run build`, and all four browser tests. The build uses Next.js 16.4.6. Inter and OpenStreetMap require an internet connection.
+Nearby vehicle and passenger route fixtures live in `frontend/src/mocks/passenger.ts`. Zod-validated models and service methods are separate from React components. Independent loading, empty, and retry states are covered by `frontend/tests/passenger-home.spec.ts`. Booking remains a preview; no Django backend was changed for this screen.
