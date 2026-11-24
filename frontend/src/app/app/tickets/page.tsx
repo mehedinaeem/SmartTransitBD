@@ -1,5 +1,5 @@
-import { UpcomingPage } from "@/features/pages";
-export const metadata = { title: "Tickets" };
+import { PassengerTickets } from "@/features/booking/tickets-list";
+export const metadata = { title: "My tickets" };
 export default function Page() {
-  return <UpcomingPage kind="tickets" passenger />;
+  return <PassengerTickets />;
 }

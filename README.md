@@ -66,3 +66,29 @@ Nearby vehicle and passenger route fixtures live in `frontend/src/mocks/passenge
 BUS-06 receives a development GPS sample every 3 seconds. Its marker interpolates over 2.8 seconds between samples, with reduced-motion support. The simulator, subscription hook, and map-independent interpolation live in separate modules; the map consumes typed positions. The selected panel's timestamp ages honestly and marks stale samples as delayed. Distances, ETAs, and seat counts remain illustrative fixtures. No production hardware or Django WebSocket connection is enabled.
 
 See the GPS boundary notes in `docs/api-contracts.md`. Tracking screenshots are saved as `frontend/artifacts/live-*.png`; `tests/live-tracking.spec.ts` and `tests/gps-logic.spec.ts` verify controls, movement, source lifecycle, reduced motion, and message validation.
+
+## Passenger bus details
+
+`/app/bus/[id]` now provides a passenger journey screen with ETA, speed, available seats, occupancy, latest known coordinates, a vertical route timeline, operator/device information, and a compact occupancy visualization. BUS-06 uses the requested JKKNIU → Trishal → Bhaluka → Mymensingh demo itinerary. The itinerary is illustrative, not validated geographic routing.
+
+The last accepted GPS fix is retained in a session-only Zustand store when moving from the live map to details. Track Live opens the corresponding vehicle; View Seats opens `/app/seats/TRIP-001` for BUS-06. Book Ticket opens the same trip's seat selector. Only available seats can be selected, and Continue opens a booking review with the trip and seat in the URL. Only demo tickets are created; no real seat reservation or payment occurs.
+
+Bus details and seat fixtures are separate from React components and validated through API service models. Loading, retry, missing-bus, missing-trip, GPS retention, and booking-entry behaviors are covered in `frontend/tests/bus-details.spec.ts`. Screenshots are saved as `frontend/artifacts/bus-details-*.png`.
+
+## Seat selection
+
+`/app/seats/[tripId]` now provides a reusable A1–J4, 40-seat layout with a center aisle and a driver position. Available, reserved, occupied, selected, and blocked states have distinct restrained styling and a visible legend. Selection is immediate and exclusive; clicking a selected seat clears it. Only available seats are enabled.
+
+The fixed booking bar shows the chosen seat and the mock BDT 40 fare. Continuing with B3 opens `/app/booking?trip=TRIP-001&seat=B3`; the review validates that the trip exists and the seat is still available. Changing seats restores a valid selection. The legacy `intent=booking` query is no longer required.
+
+Shared components live in `frontend/src/components/seats/` and contain no passenger routing or API dependencies. Seat identifiers and allocation states are Zod-validated in `types/seats.ts`; selection remains local UI state. Fixtures live in `mocks/seat-layouts.ts`. Bus detail occupancy now separates reserved and blocked seats: TRIP-001 has 30 occupied, 8 available, 1 reserved, and 1 blocked, totaling 40. No Django changes are part of this step.
+
+## Prototype booking checkout
+
+`/app/booking?trip=TRIP-001&seat=B3` shows BUS-06, JKKNIU → Mymensingh, Today, 8:30 AM Bangladesh time, seat B3, and the mock fare ৳40. The passenger name starts as Naeem. Zod validates name, a Bangladesh mobile number (including formatted or Bengali digits), and an optional email address.
+
+bKash, Nagad, Card, and Cash are selectable methods with no provider SDK or real payment request. `PaymentAdapter` is isolated from UI and injected into the mock booking service; a future real provider must use server-backed authorization. Confirmation rechecks seat availability, uses a request idempotency key, and simulates 900ms of processing. The first demo booking has ID `STB-2026-00183`, status `CONFIRMED`, and payment status `SIMULATED`, then opens `/app/tickets/STB-2026-00183`.
+
+Mock bookings are stored in sessionStorage for the current browser tab so confirmation survives refresh and appears in My Tickets. If browser storage is unavailable, they remain in memory until reload. Ticket pages clearly state that no money was charged and the demo is not a valid boarding pass. No Django booking or payment endpoints were implemented in this step.
+
+Passenger digital tickets are available at `/app/tickets` and `/app/tickets/STB-2026-00183`. Upcoming, completed, and cancelled demo journeys include locally generated QR codes, PNG ticket downloads, and vehicle-specific live tracking links. Checkout records override demo fixtures within the current browser tab. Future Django list/detail contracts are documented in `docs/api-contracts.md`.

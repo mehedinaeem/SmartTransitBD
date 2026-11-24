@@ -1,4 +1,4 @@
-import { nearbyVehicleSchema } from "@/types/passenger";
+import { nearbyVehicleSchema, busDetailsSchema } from "@/types/passenger";
 import { vehicleSchema } from "@/types/transit";
 import { getResource, listSchema } from "./client";
 export const vehiclesApi = {
@@ -7,7 +7,7 @@ export const vehiclesApi = {
   detail: (id: string, signal?: AbortSignal) =>
     getResource(
       `vehicles/${encodeURIComponent(id)}/`,
-      nearbyVehicleSchema,
+      busDetailsSchema,
       signal,
     ),
   list: (signal?: AbortSignal) =>

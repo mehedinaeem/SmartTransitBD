@@ -91,10 +91,18 @@ export function AppShell({
   const items = mode === "operator" ? operatorItems : passengerItems;
   const current =
     items.find((item) => item[1] === pathname)?.[0] ??
-    (pathname.startsWith("/app/bus/") ? "Bus details" : "Overview");
+    (pathname.startsWith("/app/bus/")
+      ? "Bus details"
+      : pathname.startsWith("/app/tickets/")
+        ? "Ticket"
+        : pathname.startsWith("/app/seats/")
+          ? "Seat selection"
+          : pathname === "/app/booking"
+            ? "Booking preview"
+            : "Overview");
   return (
     <div
-      className={`workspace ${mode} ${mode === "passenger" && pathname === "/app" ? "passenger-home-shell" : mode === "passenger" && pathname === "/app/live" ? "passenger-live-shell" : ""}`}
+      className={`workspace ${mode} ${mode === "passenger" && pathname === "/app" ? "passenger-home-shell" : mode === "passenger" && pathname === "/app/live" ? "passenger-live-shell" : mode === "passenger" && pathname.startsWith("/app/bus/") ? "passenger-bus-shell" : mode === "passenger" && pathname.startsWith("/app/seats/") ? "passenger-seats-shell" : mode === "passenger" && pathname === "/app/booking" ? "passenger-booking-shell" : mode === "passenger" && pathname.startsWith("/app/tickets") ? "passenger-ticket-shell" : ""}`}
     >
       <a href="#main" className="skip-link">
         Skip to content

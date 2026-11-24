@@ -18,6 +18,8 @@ export function PassengerNavigation() {
           href === "/app"
             ? pathname === "/app" ||
               pathname.startsWith("/app/bus/") ||
+              pathname.startsWith("/app/seats/") ||
+              pathname === "/app/booking" ||
               pathname === "/app/live"
             : pathname.startsWith(href);
         return (

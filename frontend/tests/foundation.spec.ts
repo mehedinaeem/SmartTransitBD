@@ -12,8 +12,11 @@ const routes = [
   "/app",
   "/app/live",
   "/app/bus/BUS-06",
+  "/app/seats/TRIP-001",
+  "/app/booking?trip=TRIP-001&seat=B3",
   "/app/routes",
   "/app/tickets",
+  "/app/tickets/STB-2026-00183",
   "/app/profile",
 ];
 for (const width of [375, 430, 768, 1024, 1440]) {
@@ -54,6 +57,43 @@ for (const width of [375, 430, 768, 1024, 1440]) {
           .catch(() => {});
         await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
         await page.screenshot({ path: `artifacts/live-${width}.png` });
+      }
+      if (route.startsWith("/app/tickets")) {
+        if (route.includes("STB-"))
+          await expect(
+            page.getByAltText("QR code for booking STB-2026-00183"),
+          ).toBeVisible();
+        await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
+        await page.screenshot({
+          path: `artifacts/${route.includes("STB-") ? "ticket" : "tickets"}-${width}.png`,
+          fullPage: true,
+        });
+      }
+      if (route.startsWith("/app/booking?")) {
+        await expect(
+          page.getByRole("textbox", { name: "Name", exact: false }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole("region", { name: "Trip summary" }),
+        ).toContainText("8:30 AM");
+        await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
+        await page.screenshot({ path: `artifacts/checkout-${width}.png` });
+      }
+      if (route === "/app/seats/TRIP-001") {
+        await expect(
+          page
+            .getByRole("group", { name: "40-seat bus layout" })
+            .getByRole("button"),
+        ).toHaveCount(40);
+        await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
+        await page.screenshot({ path: `artifacts/seats-${width}.png` });
+      }
+      if (route === "/app/bus/BUS-06") {
+        await expect(
+          page.getByRole("heading", { name: "BUS-06", exact: true }),
+        ).toBeVisible();
+        await expect(page.locator("main > div")).toHaveCSS("opacity", "1");
+        await page.screenshot({ path: `artifacts/bus-details-${width}.png` });
       }
       expect(
         await page.evaluate(

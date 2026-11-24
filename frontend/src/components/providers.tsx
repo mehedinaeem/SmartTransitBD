@@ -14,7 +14,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={client}>
       <MotionConfig reducedMotion="user">
         {children}
-        <Toaster richColors position="bottom-right" />
+        <Toaster
+          richColors
+          position="bottom-right"
+          mobileOffset={{
+            bottom: "calc(82px + env(safe-area-inset-bottom))",
+            left: 16,
+            right: 16,
+          }}
+        />
       </MotionConfig>
     </QueryClientProvider>
   );

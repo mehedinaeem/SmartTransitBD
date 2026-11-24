@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, useRef } from "react";
+import { useTrackingStore } from "@/stores/tracking-store";
 import { useQuery } from "@tanstack/react-query";
 import { trackingApi } from "@/lib/api/tracking";
 import { createDefaultGpsSource } from "@/lib/tracking/source";
@@ -50,6 +51,10 @@ export function useLiveTracking(
       },
     });
   }, [query.data]);
+  const remember = useTrackingStore((state) => state.remember);
+  useEffect(() => {
+    for (const update of Object.values(updates)) remember(update);
+  }, [updates, remember]);
   const vehicles = useMemo(
     () =>
       query.data?.vehicles.map((vehicle) => {

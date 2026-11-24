@@ -44,9 +44,13 @@ export function TrackingMapSkeleton() {
     </div>
   );
 }
-export function LiveTracking() {
+export function LiveTracking({
+  initialBusId = "BUS-06",
+}: {
+  initialBusId?: string;
+}) {
   const { query, vehicles, connection, now } = useLiveTracking();
-  const [selectedId, setSelectedId] = useState<string | null>("BUS-06");
+  const [selectedId, setSelectedId] = useState<string | null>(initialBusId);
   const [following, setFollowing] = useState(false);
   const reducedMotion = useReducedMotion();
   const map = useRef<LiveMapHandle>(null);

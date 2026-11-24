@@ -1,0 +1,86 @@
+import { ticketSchema, type TicketRecord } from "@/types/booking";
+import { dhakaDateKey } from "@/lib/dates";
+/** Display-only history. These fixtures never reserve seats or change the booking ID counter. */
+export function createDemoTickets(now = Date.now()): TicketRecord[] {
+  const definitions = [
+    {
+      bookingId: "STB-2026-00183",
+      tripId: "TRIP-001",
+      vehicleId: "BUS-06",
+      from: "JKKNIU",
+      to: "Mymensingh",
+      days: 0,
+      departureTime: "08:30",
+      seatId: "B3",
+      fare: 40,
+      status: "CONFIRMED",
+      paymentMethod: "bkash",
+    },
+    {
+      bookingId: "STB-2026-00176",
+      tripId: "TRIP-002",
+      vehicleId: "BUS-12",
+      from: "Trishal",
+      to: "Mymensingh",
+      days: 1,
+      departureTime: "09:15",
+      seatId: "C4",
+      fare: 40,
+      status: "CONFIRMED",
+      paymentMethod: "nagad",
+    },
+    {
+      bookingId: "STB-2026-00142",
+      tripId: "TRIP-003",
+      vehicleId: "BUS-19",
+      from: "JKKNIU",
+      to: "Netrokona",
+      days: -1,
+      departureTime: "07:45",
+      seatId: "A1",
+      fare: 40,
+      status: "COMPLETED",
+      paymentMethod: "cash",
+    },
+    {
+      bookingId: "STB-2026-00131",
+      tripId: "TRIP-001",
+      vehicleId: "BUS-06",
+      from: "JKKNIU",
+      to: "Mymensingh",
+      days: -3,
+      departureTime: "16:00",
+      seatId: "G1",
+      fare: 40,
+      status: "COMPLETED",
+      paymentMethod: "card",
+    },
+    {
+      bookingId: "STB-2026-00110",
+      tripId: "TRIP-002",
+      vehicleId: "BUS-12",
+      from: "Trishal",
+      to: "Mymensingh",
+      days: -2,
+      departureTime: "13:00",
+      seatId: "D3",
+      fare: 40,
+      status: "CANCELLED",
+      paymentMethod: "bkash",
+    },
+  ];
+  return definitions.map(({ days, ...ticket }) =>
+    ticketSchema.parse({
+      ...ticket,
+      travelDate: dhakaDateKey(new Date(now + days * 86400000)),
+      currency: "BDT",
+      passenger: { name: "Naeem", phone: "+8801712345678" },
+      paymentStatus: "SIMULATED",
+      paymentReference: `DEMO-${ticket.bookingId}`,
+      isDemo: true,
+      createdAt: new Date(
+        now + Math.min(-1, days - 1) * 86400000,
+      ).toISOString(),
+    }),
+  );
+}

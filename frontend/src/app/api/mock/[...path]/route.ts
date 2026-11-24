@@ -1,3 +1,4 @@
+import { createBusDetails, createSeatPreview } from "@/mocks/bus-details";
 import { createTrackingSnapshot } from "@/mocks/tracking";
 import { nearbyVehicles, passengerRoutes } from "@/mocks/passenger";
 import { vehicles, routes, overview } from "@/mocks/data";
@@ -47,12 +48,16 @@ export async function GET(
     );
   }
   if (key.startsWith("vehicles/") && key !== "vehicles/nearby") {
-    const vehicle = nearbyVehicles.find(
-      (vehicle) => key === `vehicles/${vehicle.id}`,
-    );
+    const vehicle = createBusDetails(key.slice("vehicles/".length));
     return vehicle
-      ? Response.json(vehicle)
+      ? Response.json(vehicle, { headers: { "Cache-Control": "no-store" } })
       : Response.json({ detail: "Vehicle not found" }, { status: 404 });
+  }
+  if (key.startsWith("trips/")) {
+    const trip = createSeatPreview(key.slice("trips/".length));
+    return trip
+      ? Response.json(trip)
+      : Response.json({ detail: "Trip not found" }, { status: 404 });
   }
   if (!Object.hasOwn(resources, key))
     return Response.json({ detail: "Unknown mock resource" }, { status: 404 });

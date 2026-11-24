@@ -1,5 +1,4 @@
 "use client";
-import { ApiError } from "@/lib/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { vehiclesApi } from "@/lib/api/vehicles";
 import { routesApi } from "@/lib/api/routes";
@@ -25,13 +24,6 @@ export const useNearbyVehicles = () =>
   useQuery({
     queryKey: ["vehicles", "nearby"],
     queryFn: ({ signal }) => vehiclesApi.nearby(signal),
-  });
-export const useNearbyVehicle = (id: string) =>
-  useQuery({
-    queryKey: ["vehicles", "detail", id],
-    queryFn: ({ signal }) => vehiclesApi.detail(id, signal),
-    retry: (count, error) =>
-      !(error instanceof ApiError && error.status === 404) && count < 1,
   });
 export const usePopularRoutes = () =>
   useQuery({

@@ -31,3 +31,17 @@ Booking requires its own transactional seat allocation, idempotency, payment rec
 Tracking initial state comes through `lib/api/tracking.ts` and a Zod snapshot contract. A mounted `useLiveTracking` session subscribes to an injected `GpsSource` and applies validated, ordered updates. The development source is isolated in `mocks/gps-simulator.ts`; the source selector refuses to run it for hardware-mode snapshots. UI clock ticks update freshness without reconnecting the source.
 
 The Leaflet view in `features/tracking/live-map.tsx` owns map layers, selection visuals, route fitting, and camera controls. Position interpolation is a separate, map-independent module with an injectable frame clock. GPS sampling does not occur in the map, and animation frames do not rerender the entire React page. Unmounting cancels the source, age timer, animation frames, map observers, and marker icon roots. A manual map drag exits follow mode.
+
+## Shared seat components
+
+The seat system separates persistent allocation (`Seat.status`) from controlled, transient selection (`SeatState.SELECTED`). `components/seats` renders buttons, the 2+2 layout, and the legend without fetching data, changing global booking state, or navigating. It can be reused in an operator read-only view. Passenger policy, trip loading, the fare/selection bar, and routing remain in the passenger feature.
+
+Typed fixtures and Zod contracts ensure 40 unique, correctly labeled seats. One shared fixture supplies allocation counts to both the selector and bus details. Booking query parameters are validated and checked against current availability before the review is displayed. The mock UI does not implement the transactional backend needed to reserve seats.
+
+## Checkout boundary
+
+Passenger fields and query parameters are validated independently. Seat and fare authority comes from a fresh trip resource before confirmation. Checkout uses a TanStack mutation plus a synchronous submission latch, with a stable idempotency key for retry. UI validation state, payment-method selection, and pending feedback remain separate from the booking service.
+
+`lib/booking-service.ts` defines creation and retrieval; `lib/payments/types.ts` defines payment preparation outcomes. Mock adapters use no external SDK or payment network, and a mock confirmation refuses non-simulated payment results. Tab-scoped demo storage powers ticket refresh and My Tickets, with explicit demo labeling. The Django application, transactional seat holding, production provider authorization, and real ticket issuance are unchanged.
+
+Passenger tickets use a dedicated ticket schema and list/detail service methods, independent mock fixtures, and reusable QR/payload/download utilities under `lib/tickets`. Status tabs support keyboard navigation and loading, empty, and error states. Existing passenger transitions and reduced-motion handling apply to both ticket routes. Canvas exports and QR generation execute entirely in the browser.

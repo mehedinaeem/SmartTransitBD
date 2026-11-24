@@ -46,3 +46,24 @@ export const listSchema = <T>(schema: z.ZodType<T>) =>
           results: z.array(schema),
         })
         .transform((page) => page.results);
+
+export async function postResource<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  body: unknown,
+  options: { idempotencyKey: string; signal?: AbortSignal },
+): Promise<T> {
+  const response = await fetch(`${baseUrl}/${path.replace(/^\//, "")}`, {
+    method: "POST",
+    signal: options.signal,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Idempotency-Key": options.idempotencyKey,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok)
+    throw new ApiError(response.status, `Request failed (${response.status})`);
+  return schema.parse(await response.json());
+}
